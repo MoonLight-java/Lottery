@@ -1,22 +1,37 @@
 @echo off
-chcp 65001 >nul
 cd /d "%~dp0"
 
 echo ========================================
-echo  启动抽奖系统
+echo   Lottery System Launcher
 echo ========================================
 echo.
 
-echo [1/2] 启动后端 API (Spring Boot :8080)...
-start "Lottery-API" cmd /c "cd backend && mvn spring-boot:run -q"
+echo === Checking environment ===
+where mvn >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [ERROR] mvn not found. Please install Maven and add to PATH.
+    pause
+    exit /b 1
+)
 
-echo [2/2] 启动前端开发服务器 (Vite :3000)...
-start "Lottery-UI" cmd /c "cd frontend && npx vite --host"
+if not exist "frontend\node_modules" (
+    echo First run detected, installing frontend dependencies...
+    cd frontend
+    call npm install
+    cd ..
+)
 
 echo.
-echo 后端: http://localhost:8080/api/lottery
-echo 前端: http://localhost:3000
+echo [1/2] Starting backend API (port 8080)...
+start "Lottery-API" cmd /k "cd backend && mvn spring-boot:run"
+
+echo [2/2] Starting frontend dev server (port 3000)...
+start "Lottery-UI" cmd /k "cd frontend && npx vite --host"
+
 echo.
-echo 两个窗口已打开，关闭窗口即停止服务。
+echo Backend:  http://localhost:8080/api/lottery
+echo Frontend: http://localhost:3000
+echo.
+echo Close the two popup windows to stop services.
 echo ========================================
 pause
